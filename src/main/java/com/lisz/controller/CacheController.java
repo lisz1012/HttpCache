@@ -30,21 +30,22 @@ public class CacheController {
 
         String body = "<a href =''>hi点我</a>";
 
-        String ETag = getMd5(body);
+        String ETag = "\"" + getMd5(body) + "\"";
         System.out.println("ETag: " + ETag);
 
         //由于Tomcat会帮着我们返回304或者200，所以我们自己不用做逻辑
         if (ETag.equals(ifNoneMatch)) {
             //返回304
+            return new ResponseEntity<>(body,headers,HttpStatus.NOT_MODIFIED);
         } else {
+            System.out.println("Setting the headers");
             //加载资源返回
+            // 服务端设置了ETag之后，浏览器下次访问的时候会聪明地带上ETag，放在header的"If-None-Match"字段里供server检查
+            headers.add("Date", simpleDateFormat.format(new Date(now)));
+            headers.add("owner", "lisz");
+            headers.add("ETag", ETag); //ETag是http关键字，Etag这里不区分大小写
+            return new ResponseEntity<>(body,headers,HttpStatus.OK);
         }
-
-        headers.add("Date", simpleDateFormat.format(new Date(now)));
-        headers.add("owner", "lisz");
-        headers.add("ETag", ETag); //ETag是http关键字，Etag这里不区分大小写
-
-        return new ResponseEntity<>(body,headers,HttpStatus.OK);
     }
 
     /**
