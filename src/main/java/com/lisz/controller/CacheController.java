@@ -39,7 +39,7 @@ public class CacheController {
             return new ResponseEntity<>(body,headers,HttpStatus.NOT_MODIFIED);
         } else {
             System.out.println("Setting the headers");
-            //加载资源返回
+            // 加载资源返回. "ETag"是http协议的保留字段
             // 服务端设置了ETag之后，浏览器下次访问的时候会聪明地带上ETag，放在header的"If-None-Match"字段里供server检查
             headers.add("Date", simpleDateFormat.format(new Date(now)));
             headers.add("owner", "lisz");
