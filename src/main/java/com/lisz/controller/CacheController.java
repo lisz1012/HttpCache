@@ -17,6 +17,40 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/cache")
 public class CacheController {
 
+    private MyFile file = MyFile.getInstance();
+
+    @RequestMapping("/ctrl")
+    public ResponseEntity<String> last(@RequestHeader(value="IF-Modified-Since",required = false) Date ifModifiedSince) {
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+
+        long now = System.currentTimeMillis() / 1000 *1000;
+        // 系统当前时间
+
+        System.out.println(now);
+        // 缓存时间
+        long maxAge = 20;
+
+        HttpHeaders headers = new HttpHeaders();
+
+        if (null != ifModifiedSince && ifModifiedSince.getTime() == file.getLastModified() ) {
+
+            System.out.println(304);
+
+        }
+
+        // age: 20292957 中age这个字段是CDN下发下来的，后面的数字是指这个资源在CDN上已经存在或更新了多长时间了，单位是秒。清理缓存刷新的时候会改变，不清缓存刷新不变
+        // via 也是CDN下发下来的，代表一台服务器的名称，[]里标记缓存有没有命中，MISS就是没命中CDN缓存，request则会打到源服务器（tomcat）上，对于客户端没啥用，是给
+        // 开发人员排查错误用的：如果觉得后端服务器的负载量跟预想的不一样，就来查查这个，第一次MISS，第二次还是MISS的话就有问题了
+        headers.add("Date", simpleDateFormat.format(new Date(now)));
+        headers.add("Expires", simpleDateFormat.format(new Date(now + maxAge * 1000)));
+        headers.add("Cache-Control", "max-age="+maxAge);//max-age指的是返回的页面的最大有效时间是多长，一秒为单位
+        headers.add("Last-Modified", simpleDateFormat.format(new Date(file.getLastModified())));
+
+        String body = "<a href =''>hi点我</a>";
+        return new ResponseEntity<>(body,headers,HttpStatus.OK);
+    }
+
     @RequestMapping("/")
     public ResponseEntity<String> last(@RequestHeader(value="If-None-Match",required = false) String ifNoneMatch) {//value="IF-Modified-Since"
 
