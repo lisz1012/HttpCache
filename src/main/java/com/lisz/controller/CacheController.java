@@ -36,7 +36,7 @@ public class CacheController {
         //由于Tomcat会帮着我们返回304或者200，所以我们自己不用做逻辑
         if (ETag.equals(ifNoneMatch)) {
             //返回304
-            return new ResponseEntity<>(body,headers,HttpStatus.NOT_MODIFIED);
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         } else {
             System.out.println("Setting the headers");
             // 加载资源返回. "ETag"是http协议的保留字段
