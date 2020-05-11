@@ -18,21 +18,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class CacheController {
 
     @RequestMapping("/")
-    public ResponseEntity<String> last(@RequestHeader(value="IF-Modified-Since",required = false) Date ifModifiedSince) {
+    public ResponseEntity<String> last(@RequestHeader(value="If-None-Match",required = false) String ifNoneMatch) {//value="IF-Modified-Since"
+
+        System.out.println(ifNoneMatch);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
 
         long now = System.currentTimeMillis() / 1000 *1000;
 
-        HttpHeaders headers = new HttpHeaders();
+        HttpHeaders headers = new HttpHeaders(); // HttpHeader有点像一个Map，其add方法相当于put
 
         String body = "<a href =''>hi点我</a>";
 
         String ETag = getMd5(body);
+        System.out.println("ETag: " + ETag);
+
+        //由于Tomcat会帮着我们返回304或者200，所以我们自己不用做逻辑
+        if (ETag.equals(ifNoneMatch)) {
+            //返回304
+        } else {
+            //加载资源返回
+        }
 
         headers.add("Date", simpleDateFormat.format(new Date(now)));
         headers.add("owner", "lisz");
-        headers.add("ETag", ETag);
+        headers.add("ETag", ETag); //ETag是http关键字，Etag这里不区分大小写
 
         return new ResponseEntity<>(body,headers,HttpStatus.OK);
     }
